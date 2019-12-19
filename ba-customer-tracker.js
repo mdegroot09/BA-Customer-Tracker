@@ -10,17 +10,17 @@ function onEdit(e){
     var cell = range.getA1Notation()
     var val = ss.getRange(cell).getValue()
     
-    // Converting to Opportunity from New/Warm Lead
+    // Converting from New/Warm Lead to Opportunity 
     if ((val === 'Searching' || val === 'Touring' || val === 'Offering' || val === 'UC') && columnEdited === 7){
       convertToOpp(rowEdited)
     }
     
-    // Converting to Cold Lead from New/Warm Lead
+    // Converting from New/Warm Lead to Cold Lead 
     else if (val === 'Cold Lead' && columnEdited === 7){
       convertToCold(rowEdited)
     }
     
-    // Converting Closed and Lost to Archive from New/Warm Lead 
+    // Converting from New/Warm Lead to Archive 
     else if ((val === 'Closed' && columnEdited === 7) || ((val === 'Lost' || val === 'Abandoned') && columnEdited === 12)){
       archive(rowEdited)
     }
@@ -31,17 +31,17 @@ function onEdit(e){
     var cell = range.getA1Notation()
     var val = ss.getRange(cell).getValue()
     
-    // Converting to Opportunity from Cold Lead
+    // Converting from Cold Lead to Opportunity 
     if ((val === 'Searching' || val === 'Touring' || val === 'Offering' || val === 'UC') && columnEdited === 7){
       convertToOpp(rowEdited)
     }
     
-    // Converting to New/Warm Lead from Cold Lead
+    // Converting from Cold Lead to New/Warm Lead 
     else if ((val === 'Warm Lead' || val === 'New Lead') && columnEdited === 7){
       convertToWarm(rowEdited)
     }
     
-    // Converting Closed and Lost to Archive from Cold Lead 
+    // Converting from Cold Lead to Archive  
     else if ((val === 'Closed' && columnEdited === 7) || ((val === 'Lost' || val === 'Abandoned') && columnEdited === 12)){
       archive(rowEdited)
     }
@@ -52,17 +52,17 @@ function onEdit(e){
     var cell = range.getA1Notation()
     var val = ss.getRange(cell).getValue()
     
-    // Converting to Cold Lead from Opportunity
+    // Converting from Opportunity to Cold Lead 
     if (val === 'Cold Lead' && columnEdited === 7){
       convertToCold(rowEdited)
     }
     
-    // Converting to New/Warm Lead from Opportunity
+    // Converting from Opportunity to New/Warm Lead 
     else if ((val === 'Warm Lead' || val === 'New Lead') && columnEdited === 7){
       convertToWarm(rowEdited)
     }
     
-    // Converting Closed and Lost to Archive from Opportunity
+    // Converting from Opportunity to Archive 
     else if ((val === 'Closed' && columnEdited === 7) || ((val === 'Lost' || val === 'Abandoned') && columnEdited === 12)){
       archive(rowEdited)
     }
@@ -80,25 +80,20 @@ function onEdit(e){
       var stage = ss.getRange(stageCell).getValue()
       ss.getRange("L"+rowEdited+"").setBackground(null);
       
-      // Converting to New/Warm Lead from Archive
+      // Converting from Archive to New/Warm Lead 
       if (stage === 'New Lead' || stage === 'Warm Lead'){
         convertToWarm(rowEdited)
       }
       
-      // Converting to Cold Lead from Archive
+      // Converting from Archive to Cold Lead 
       else if (stage === 'Cold Lead'){
         convertToCold(rowEdited)
       }
       
-      // Converting to Opportunity from Archive
+      // Converting from Archive to Opportunity 
       else if (stage === 'Searching' || stage === 'Touring' || stage === 'Offering' || stage === 'UC'){
         convertToOpp(rowEdited)
       }
-    }
-    
-    // Converting Closed and Lost to Archive from Opportunity
-    else if ((val === 'Closed' && columnEdited === 7) || ((val === 'Lost' || val === 'Abandoned') && columnEdited === 12)){
-      archive(rowEdited)
     }
   }
 }
