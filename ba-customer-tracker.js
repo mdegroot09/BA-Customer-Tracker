@@ -21,7 +21,7 @@ function onEdit(e){
     }
     
     // Converting Closed and Lost to Archive from New/Warm Lead 
-    else if ((val === 'Closed' && columnEdited === 7) || ((val === 'Lost' || val === 'Lost') && columnEdited === 12)){
+    else if ((val === 'Closed' && columnEdited === 7) || ((val === 'Lost' || val === 'Abandoned') && columnEdited === 12)){
       archive(rowEdited)
     }
   }
@@ -42,7 +42,7 @@ function onEdit(e){
     }
     
     // Converting Closed and Lost to Archive from Cold Lead 
-    else if ((val === 'Closed' && columnEdited === 7) || ((val === 'Lost' || val === 'Lost') && columnEdited === 12)){
+    else if ((val === 'Closed' && columnEdited === 7) || ((val === 'Lost' || val === 'Abandoned') && columnEdited === 12)){
       archive(rowEdited)
     }
   }
@@ -63,7 +63,7 @@ function onEdit(e){
     }
     
     // Converting Closed and Lost to Archive from Opportunity
-    else if ((val === 'Closed' && columnEdited === 7) || ((val === 'Lost' || val === 'Lost') && columnEdited === 12)){
+    else if ((val === 'Closed' && columnEdited === 7) || ((val === 'Lost' || val === 'Abandoned') && columnEdited === 12)){
       archive(rowEdited)
     }
   }
@@ -97,7 +97,7 @@ function onEdit(e){
     }
     
     // Converting Closed and Lost to Archive from Opportunity
-    else if ((val === 'Closed' && columnEdited === 7) || (val === 'Lost' && columnEdited === 12)){
+    else if ((val === 'Closed' && columnEdited === 7) || ((val === 'Lost' || val === 'Abandoned') && columnEdited === 12)){
       archive(rowEdited)
     }
   }
