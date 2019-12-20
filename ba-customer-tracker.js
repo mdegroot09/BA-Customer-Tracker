@@ -181,12 +181,13 @@ function updateCalendar(){
   
   var val = ss.getRange('W7').getValue()
   //  var eventName = 'Default'
-  ss.getRange('Y14').setValue('')
-  ss.getRange('Y14').setValue('running')
   
-  var id = getEventByName('test #2')
+  var id = getEventByName('test')
   
-  calendar.getEventById(id).deleteEvent()  
+  if (id){
+    calendar.getEventById(id).deleteEvent()  
+  }
+  
   ss.getRange('Y17').setValue('done')
 
   //  var event = CalendarApp.getCalendarById('mike.degroot@homie.com').createAllDayEvent('test #2', new Date('December 25, 2019'),{location: ''})
