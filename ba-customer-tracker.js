@@ -374,7 +374,9 @@ function deleteEvents(){
     }
   }
   
+  // Clear previous dates from buyer row
   ss.getRange('W' + rowNum + ':Y' + rowNum + '').clear({contentsOnly: true})
   
+  // Reset the formatting for the date inputs 
   redoFormatting()
 }
