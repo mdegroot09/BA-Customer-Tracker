@@ -173,13 +173,23 @@ function updateCalendar(){
   // If no buyer is selected, throw an error
   if (!buyerName){
     makeBuyerRed()
-    return alertUser('Please enter a buyer name.')
+    return alertUser('Enter a buyer name.')
   }
   
   // If no dates are selected, throw an error
   else if (!dueDiligenceDate && !financingDate && !settlementDate){
     makeDatesRed()
-    return alertUser('Please enter at least one date.')
+    
+    if (dueDiligenceOldDate || financingOldDate || settlementOldDate){    
+      alertUser('Enter at least one new date to update your calendar.')
+      return resetOldDateFormats(rowNum)
+    } 
+    
+    else {
+      return alertUser(
+        'Enter all three dates to add them to your calendar. If a date is not applicable (e.g. F&A for a cash deal), enter "N/A" for the date.'
+      )
+    }
   } 
   
   // If no previous dates, and not all dates are entered
@@ -208,8 +218,8 @@ function updateCalendar(){
     email = 'homie.com_1cs8eji9ahpmol4rvqllcq8bco@group.calendar.google.com'
     deleteCreateEvents(email, dueDiligenceOldDate, financingOldDate, settlementOldDate)
     
-    redoFormatting()
-    return alertUser('Events have been added to your calendar.')
+    redoInputFormats()
+    return alertUser('Success! Events have been added to your calendar.')
   }
 }
 
@@ -324,7 +334,7 @@ function sendUCEmails(email){
   })
 }
 
-function redoFormatting() {
+function redoInputFormats() {
   var ss = SpreadsheetApp.getActive()
   ss.getRange('V2:Y2')
   .clear({contentsOnly: true})
@@ -368,6 +378,13 @@ function makeDatesRed() {
 function alertUser(text){
   var ui = SpreadsheetApp.getUi()
   ui.alert(text)
+}
+
+function resetOldDateFormats(rowNum){
+  var ss = SpreadsheetApp.getActive()
+  ss.getRange('W' + rowNum + '').setNumberFormat('m"/"d"/"yy').getValue()
+  ss.getRange('X' + rowNum + '').setNumberFormat('m"/"d"/"yy').getValue()
+  ss.getRange('Y' + rowNum + '').setNumberFormat('m"/"d"/"yy').getValue()
 }
 
 function deleteEvents(){
@@ -451,7 +468,7 @@ function deleteEvents(){
   ss.getRange('W' + rowNum + ':Y' + rowNum + '').clear({contentsOnly: true})
   
   // Reset the formatting for the date inputs 
-  redoFormatting()
+  redoInputFormats()
   
   // Success alert
   alertUser('Events were successfully deleted from your calendar.')
