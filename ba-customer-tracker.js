@@ -257,7 +257,7 @@ function deleteCreateEvents(email, dueDiligenceOldDate, financingOldDate, settle
   
   // Send out UC emails if there aren't any existing deadlines and it's not the 2nd time through this function
   if (!dueDiligenceOldDate && !financingOldDate && !settlementOldDate && email !== 'homie.com_1cs8eji9ahpmol4rvqllcq8bco@group.calendar.google.com'){
-    sendUCEmails()
+    sendUCEmails(email)
   }
 }
 
@@ -276,9 +276,12 @@ function getIdFromName(name, date, email){
   return ''
 }
 
-function sendUCEmails(){
-  MailApp.sendEmail('mike.degroot@homie.com', '#1', "You're under contract!")
-  MailApp.sendEmail('mdegroot09@gmail.com', '#2', "You're under contract!")
+function sendUCEmails(email){
+  MailApp.sendEmail({
+    to: email + "," + 'mdegroot09@gmail.com',
+    subject: "Under Contract Next Steps", 
+    htmlBody: "You're under contract!<br><img src='https://simplejoys.s3.us-east-2.amazonaws.com/email%20signature-1576377050955.png'>"
+  })
 }
 
 function redoFormatting() {
