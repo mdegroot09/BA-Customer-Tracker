@@ -158,25 +158,34 @@ function updateCalendar(){
   // Get row number of buyer being changed
   var rowNum = ss.getRange('AA1').setFormula('=IFERROR(MATCH(V2,A:A,0),"")').getValue()
   
-  // Capture old dates
-  var dueDiligenceOldDate = ss.getRange('W' + rowNum + '').setNumberFormat('mmmm" "d", "yyyy').getValue()
-  var financingOldDate = ss.getRange('X' + rowNum + '').setNumberFormat('mmmm" "d", "yyyy').getValue()
-  var settlementOldDate = ss.getRange('Y' + rowNum + '').setNumberFormat('mmmm" "d", "yyyy').getValue()
+  var dueDiligenceOldDate
+  var financingOldDate
+  var settlementOldDate
+  
+  // Define OldDate variables if rowNum is valid
+  if (rowNum) {
+    // Capture old dates
+    dueDiligenceOldDate = ss.getRange('W' + rowNum + '').setNumberFormat('mmmm" "d", "yyyy').getValue()
+    financingOldDate = ss.getRange('X' + rowNum + '').setNumberFormat('mmmm" "d", "yyyy').getValue()
+    settlementOldDate = ss.getRange('Y' + rowNum + '').setNumberFormat('mmmm" "d", "yyyy').getValue()
+  }
   
   // If no buyer is selected, throw an error
   if (!buyerName){
-    return makeBuyerRed()
+    makeBuyerRed()
+    return alertUser('Please enter a buyer name.')
   }
   
   // If no dates are selected, throw an error
   else if (!dueDiligenceDate && !financingDate && !settlementDate){
-    return makeDatesRed()
+    makeDatesRed()
+    return alertUser('Please enter at least one date.')
   } 
   
   // If no previous dates, and not all dates are entered
   else if ((!dueDiligenceDate || !financingDate || !settlementDate) && !dueDiligenceOldDate && !financingOldDate && !settlementOldDate){
     makeDatesRed()
-    alertUser(
+    return alertUser(
       'Enter all three dates to add them to your calendar. If a date is not applicable (e.g. F&A for a cash deal), enter "N/A" for the date.'
     )
   }
@@ -200,7 +209,7 @@ function updateCalendar(){
     deleteCreateEvents(email, dueDiligenceOldDate, financingOldDate, settlementOldDate)
     
     redoFormatting()
-    alertUser('Events have been added to your calendar.')
+    return alertUser('Events have been added to your calendar.')
   }
 }
 
@@ -367,7 +376,8 @@ function deleteEvents(){
   
   // If no buyer is selected, throw an error
   if (!buyerName){
-    return makeBuyerRed()
+    makeBuyerRed()
+    return alertUser('Please enter a buyer name.')
   }
   
   // Get row number of buyer being changed
@@ -442,4 +452,7 @@ function deleteEvents(){
   
   // Reset the formatting for the date inputs 
   redoFormatting()
+  
+  // Success alert
+  alertUser('Events were successfully deleted from your calendar.')
 }
