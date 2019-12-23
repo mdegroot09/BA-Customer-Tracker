@@ -149,9 +149,19 @@ function archive(rowEdited){
 function updateCalendar(){
   var ss = SpreadsheetApp.getActive()
   var buyerName = ss.getRange('V2').getValue()
+  
+  // Capture new dates
   var dueDiligenceDate = ss.getRange('W2').getValue()
   var financingDate = ss.getRange('X2').getValue()
   var settlementDate = ss.getRange('Y2').getValue()
+  
+  // Get row number of buyer being changed
+  var rowNum = ss.getRange('AA1').setFormula('=IFERROR(MATCH(V2,A:A,0),"")').getValue()
+  
+  // Capture old dates
+  var dueDiligenceOldDate = ss.getRange('W' + rowNum + '').setNumberFormat('mmmm" "d", "yyyy').getValue()
+  var financingOldDate = ss.getRange('X' + rowNum + '').setNumberFormat('mmmm" "d", "yyyy').getValue()
+  var settlementOldDate = ss.getRange('Y' + rowNum + '').setNumberFormat('mmmm" "d", "yyyy').getValue()
   
   // If no buyer is selected, throw an error
   if (!buyerName){
@@ -161,13 +171,20 @@ function updateCalendar(){
   // If no dates are selected, throw an error
   else if (!dueDiligenceDate && !financingDate && !settlementDate){
     return makeDatesRed()
+  } 
+  
+  // If no previous dates, and not all dates are entered
+  else if ((!dueDiligenceDate || !financingDate || !settlementDate) && !dueDiligenceOldDate && !financingOldDate && !settlementOldDate){
+    makeDatesRed()
+    alertUser(
+      'Enter all three dates to add them to your calendar. If a date is not applicable (e.g. F&A for a cash deal), enter "N/A" for the date.'
+    )
   }
   
   // If buyer and at least 1 date entered, delete old events and create new ones
   else {
     
-    // Get row number of buyer being changed
-    var rowNum = ss.getRange('AA1').setFormula('=IFERROR(MATCH(V2,A:A,0),"")').getValue()
+    // Set format of old dates
     ss.getRange('W' + rowNum + ':Y' + rowNum + '').setNumberFormat('m"/"d"/"yy')
     
     // Capture new dates and change format
@@ -175,11 +192,6 @@ function updateCalendar(){
     financingDate = ss.getRange('X2').setNumberFormat('mmmm" "d", "yyyy').getValue()
     settlementDate = ss.getRange('Y2').setNumberFormat('mmmm" "d", "yyyy').getValue()
     ss.getRange('W2:Y2').setNumberFormat('m"/"d"/"yy')
-    
-    // Capture old dates
-    var dueDiligenceOldDate = ss.getRange('W' + rowNum + '').setNumberFormat('mmmm" "d", "yyyy').getValue()
-    var financingOldDate = ss.getRange('X' + rowNum + '').setNumberFormat('mmmm" "d", "yyyy').getValue()
-    var settlementOldDate = ss.getRange('Y' + rowNum + '').setNumberFormat('mmmm" "d", "yyyy').getValue()
   
     var email = ss.getSheetByName('Dashboard').getRange('B6').getValue()
     deleteCreateEvents(email, dueDiligenceOldDate, financingOldDate, settlementOldDate)
@@ -188,6 +200,7 @@ function updateCalendar(){
     deleteCreateEvents(email, dueDiligenceOldDate, financingOldDate, settlementOldDate)
     
     redoFormatting()
+    alertUser('Events have been added to your calendar.')
   }
 }
 
@@ -204,10 +217,10 @@ function deleteCreateEvents(email, dueDiligenceOldDate, financingOldDate, settle
   var newEvent = ''
    
   // If a new Due Diligence date is entered
-  if (dueDiligenceDate){ 
+  if (dueDiligenceDate && dueDiligenceDate !== 'N/A'){ 
     
     // If previous due diligence date exists, find event and delete
-    if (dueDiligenceOldDate){
+    if (dueDiligenceOldDate && dueDiligenceOldDate !== 'N/A'){
       var dueDiligenceID = getIdFromName('' + buyerName + ' - Due Diligence Deadline', dueDiligenceOldDate, email)
       
       if (calendar.getEventById(dueDiligenceID)){
@@ -221,11 +234,16 @@ function deleteCreateEvents(email, dueDiligenceOldDate, financingOldDate, settle
     ss.getRange('W' + rowNum + '').setValue(dueDiligenceDate).setNumberFormat('m"/"d"/"yy')
   }
   
+  // Set Due Diligence date to N/A
+  else if (dueDiligenceDate === 'N/A'){
+    ss.getRange('W' + rowNum + '').setValue('N/A')
+  }
+  
   // If a new F&A date is entered
-  if (financingDate){ 
+  if (financingDate && financingDate !== 'N/A'){ 
     
     // If previous F&A exists, find event and delete
-    if (financingOldDate){
+    if (financingOldDate && financingOldDate !== 'N/A'){
       var financingID = getIdFromName('' + buyerName + ' - F&A Deadline', financingOldDate, email)
       if (calendar.getEventById(financingID)){
         calendar.getEventById(financingID).deleteEvent()
@@ -238,11 +256,16 @@ function deleteCreateEvents(email, dueDiligenceOldDate, financingOldDate, settle
     ss.getRange('X' + rowNum + '').setValue(financingDate).setNumberFormat('m"/"d"/"yy')
   }
   
+  // Set Due Diligence date to N/A
+  else if (financingDate === 'N/A'){
+    ss.getRange('X' + rowNum + '').setValue('N/A')
+  }
+  
   // If a new Settlement date is entered
-  if (settlementDate){ 
+  if (settlementDate && settlementDate !== 'N/A'){ 
     
     // If previous Settlement exists, find event and delete
-    if (settlementOldDate){
+    if (settlementOldDate & settlementOldDate !== 'N/A'){
       var settlementID = getIdFromName('' + buyerName + ' - Settlement & Closing Deadline', settlementOldDate, email)
       if (calendar.getEventById(settlementID)){
         calendar.getEventById(settlementID).deleteEvent()
@@ -253,6 +276,11 @@ function deleteCreateEvents(email, dueDiligenceOldDate, financingOldDate, settle
     eventName = '' + buyerName + ' - Settlement & Closing Deadline'
     newEvent = calendar.createAllDayEvent(eventName, new Date(settlementDate),{location: ''})
     ss.getRange('Y' + rowNum + '').setValue(settlementDate).setNumberFormat('m"/"d"/"yy')
+  }
+  
+  // Set Due Diligence date to N/A
+  else if (settlementDate === 'N/A'){
+    ss.getRange('Y' + rowNum + '').setValue('N/A')
   }
   
   // Send out UC emails if there aren't any existing deadlines and it's not the 2nd time through this function
@@ -280,7 +308,10 @@ function sendUCEmails(email){
   MailApp.sendEmail({
     to: email + "," + 'mdegroot09@gmail.com',
     subject: "Under Contract Next Steps", 
-    htmlBody: "You're under contract!<br><img src='https://simplejoys.s3.us-east-2.amazonaws.com/email%20signature-1576377050955.png'>"
+    htmlBody: 
+    "You're under contract!<br><br>" +
+    "Thanks,<br>" +
+    "<img src='https://simplejoys.s3.us-east-2.amazonaws.com/email%20signature-1576377050955.png'>"
   })
 }
 
@@ -308,7 +339,26 @@ function makeBuyerRed() {
 
 function makeDatesRed() {
   var ss = SpreadsheetApp.getActive();
-  return ss.getRange('W2:Y2').setBackground('#f4cccc').setFontColor('#303f46');
+  var dueDiligenceDate = ss.getRange('W2').getValue()
+  var financingDate = ss.getRange('X2').getValue()
+  var settlementDate = ss.getRange('Y2').getValue()
+  
+  if (!dueDiligenceDate){
+    ss.getRange('W2').setBackground('#f4cccc').setFontColor('#303f46')
+  }
+    
+  if (!financingDate){
+    ss.getRange('X2').setBackground('#f4cccc').setFontColor('#303f46')
+  }
+    
+  if (!settlementDate){
+    ss.getRange('Y2').setBackground('#f4cccc').setFontColor('#303f46')
+  }
+}
+
+function alertUser(text){
+  var ui = SpreadsheetApp.getUi()
+  ui.alert(text)
 }
 
 function deleteEvents(){
@@ -334,7 +384,7 @@ function deleteEvents(){
   var calendar = CalendarApp.getCalendarById(email)
     
   // If previous due diligence date exists, find event and delete
-  if (dueDiligenceOldDate){
+  if (dueDiligenceOldDate && dueDiligenceOldDate !== 'N/A'){
     var dueDiligenceID = getIdFromName('' + buyerName + ' - Due Diligence Deadline', dueDiligenceOldDate, email)
     
     if (calendar.getEventById(dueDiligenceID)){
@@ -343,7 +393,7 @@ function deleteEvents(){
   }
     
   // If previous F&A exists, find event and delete
-  if (financingOldDate){
+  if (financingOldDate && financingOldDate !== 'N/A'){
     var financingID = getIdFromName('' + buyerName + ' - F&A Deadline', financingOldDate, email)
     if (calendar.getEventById(financingID)){
       calendar.getEventById(financingID).deleteEvent()
@@ -351,7 +401,7 @@ function deleteEvents(){
   }
     
   // If previous Settlement exists, find event and delete
-  if (settlementOldDate){
+  if (settlementOldDate && settlementOldDate !== 'N/A'){
     var settlementID = getIdFromName('' + buyerName + ' - Settlement & Closing Deadline', settlementOldDate, email)
     if (calendar.getEventById(settlementID)){
       calendar.getEventById(settlementID).deleteEvent()
@@ -363,7 +413,7 @@ function deleteEvents(){
   calendar = CalendarApp.getCalendarById(email)
     
   // If previous due diligence date exists, find event and delete
-  if (dueDiligenceOldDate){
+  if (dueDiligenceOldDate && dueDiligenceOldDate !== 'N/A'){
     var dueDiligenceID = getIdFromName('' + buyerName + ' - Due Diligence Deadline', dueDiligenceOldDate, email)
     
     if (calendar.getEventById(dueDiligenceID)){
@@ -372,7 +422,7 @@ function deleteEvents(){
   }
     
   // If previous F&A exists, find event and delete
-  if (financingOldDate){
+  if (financingOldDate && financingOldDate !== 'N/A'){
     var financingID = getIdFromName('' + buyerName + ' - F&A Deadline', financingOldDate, email)
     if (calendar.getEventById(financingID)){
       calendar.getEventById(financingID).deleteEvent()
@@ -380,7 +430,7 @@ function deleteEvents(){
   }
     
   // If previous Settlement exists, find event and delete
-  if (settlementOldDate){
+  if (settlementOldDate && settlementOldDate !== 'N/A'){
     var settlementID = getIdFromName('' + buyerName + ' - Settlement & Closing Deadline', settlementOldDate, email)
     if (calendar.getEventById(settlementID)){
       calendar.getEventById(settlementID).deleteEvent()
