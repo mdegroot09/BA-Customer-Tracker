@@ -254,6 +254,11 @@ function deleteCreateEvents(email, dueDiligenceOldDate, financingOldDate, settle
     newEvent = calendar.createAllDayEvent(eventName, new Date(settlementDate),{location: ''})
     ss.getRange('Y' + rowNum + '').setValue(settlementDate).setNumberFormat('m"/"d"/"yy')
   }
+  
+  // Send out UC emails if there aren't any existing deadlines and it's not the 2nd time through this function
+  if (!dueDiligenceOldDate && !financingOldDate && !settlementOldDate && email !== 'homie.com_1cs8eji9ahpmol4rvqllcq8bco@group.calendar.google.com'){
+    sendUCEmails()
+  }
 }
 
 function getIdFromName(name, date, email){
@@ -269,6 +274,11 @@ function getIdFromName(name, date, email){
     }
   }
   return ''
+}
+
+function sendUCEmails(){
+  MailApp.sendEmail('mike.degroot@homie.com', '#1', "You're under contract!")
+  MailApp.sendEmail('mdegroot09@gmail.com', '#2', "You're under contract!")
 }
 
 function redoFormatting() {
