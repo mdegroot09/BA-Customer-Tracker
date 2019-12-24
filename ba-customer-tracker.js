@@ -12,17 +12,17 @@ function onEdit(e){
     
     // Moving from New/Warm Lead to Opportunity 
     if ((val === 'Searching' || val === 'Touring' || val === 'Offering' || val === 'UC') && columnEdited === 7){
-      moveToOpp(rowEdited)
+      return moveToOpp(rowEdited)
     }
     
     // Moving from New/Warm Lead to Cold Lead 
     else if (val === 'Cold Lead' && columnEdited === 7){
-      moveToCold(rowEdited)
+      return moveToCold(rowEdited)
     }
     
     // Moving from New/Warm Lead to Archive 
     else if ((val === 'Closed' && columnEdited === 7) || ((val === 'Lost' || val === 'Abandoned') && columnEdited === 12)){
-      archive(rowEdited)
+      return archive(rowEdited)
     }
   }
   
@@ -33,17 +33,17 @@ function onEdit(e){
     
     // Moving from Cold Lead to Opportunity 
     if ((val === 'Searching' || val === 'Touring' || val === 'Offering' || val === 'UC') && columnEdited === 7){
-      moveToOpp(rowEdited)
+      return moveToOpp(rowEdited)
     }
     
     // Moving from Cold Lead to New/Warm Lead 
     else if ((val === 'Warm Lead' || val === 'New Lead') && columnEdited === 7){
-      moveToWarm(rowEdited)
+      return moveToWarm(rowEdited)
     }
     
     // Moving from Cold Lead to Archive  
     else if ((val === 'Closed' && columnEdited === 7) || ((val === 'Lost' || val === 'Abandoned') && columnEdited === 12)){
-      archive(rowEdited)
+      return archive(rowEdited)
     }
   }
   
@@ -54,17 +54,17 @@ function onEdit(e){
     
     // Moving from Opportunity to Cold Lead 
     if (val === 'Cold Lead' && columnEdited === 7){
-      moveToCold(rowEdited)
+      return moveToCold(rowEdited)
     }
     
     // Moving from Opportunity to New/Warm Lead 
     else if ((val === 'Warm Lead' || val === 'New Lead') && columnEdited === 7){
-      moveToWarm(rowEdited)
+      return moveToWarm(rowEdited)
     }
     
     // Moving from Opportunity to Archive 
     else if ((val === 'Closed' && columnEdited === 7) || ((val === 'Lost' || val === 'Abandoned') && columnEdited === 12)){
-      archive(rowEdited)
+      return archive(rowEdited)
     }
   }
   
@@ -77,15 +77,15 @@ function onEdit(e){
     if (columnEdited === 7 && ss.getRange("L"+rowEdited).getValue() === 'Open'){
       if (val === 'Searching' || val === 'Touring' || val === 'Offering' || val === 'UC'){
         ss.getRange(cell).setBackground(null)
-        moveToOpp(rowEdited)
+        return moveToOpp(rowEdited)
       }
       else if (val === 'Warm Lead' || val === 'New Lead'){
         ss.getRange(cell).setBackground(null)
-        moveToWarm(rowEdited)
+        return moveToWarm(rowEdited)
       }
       else if (val === 'Cold Lead'){
         ss.getRange(cell).setBackground(null)
-        moveToCold(rowEdited)
+        return moveToCold(rowEdited)
       }
     }
     
@@ -98,20 +98,25 @@ function onEdit(e){
       
       // Moving from Archive to New/Warm Lead 
       if (stage === 'New Lead' || stage === 'Warm Lead'){
-        moveToWarm(rowEdited)
+        return moveToWarm(rowEdited)
       }
       
       // Moving from Archive to Cold Lead 
       else if (stage === 'Cold Lead'){
-        moveToCold(rowEdited)
+        return moveToCold(rowEdited)
       }
       
       // Moving from Archive to Opportunity 
       else if (stage === 'Searching' || stage === 'Touring' || stage === 'Offering' || stage === 'UC'){
-        moveToOpp(rowEdited)
+        return moveToOpp(rowEdited)
       }
     }
-  }  
+  }
+
+  // Alert if dates are manually added to row.
+  else if (sheetName === 'Opportunities' && (columnEdited === 23 || columnEdited === 24 || columnEdited === 25) && rowEdited > 2){
+    return alertUser('Use the form above to create/delete deadlines.')
+  }
 }
 
 function moveToOpp(rowEdited){
