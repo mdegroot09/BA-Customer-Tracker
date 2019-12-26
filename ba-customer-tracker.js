@@ -115,7 +115,10 @@ function onEdit(e){
 
   // Alert if dates are manually added to row.
   else if (sheetName === 'Opportunities' && (columnEdited === 23 || columnEdited === 24 || columnEdited === 25) && rowEdited > 2){
-    return alertUser('Use the form above to create/delete contract deadlines.')
+    alertUser('Use the form above to create/delete contract deadlines.')
+    ss.getRange('W' + rowEdited + '').setValue(ss.getRange('AC' + rowEdited + '').getValue())
+    ss.getRange('X' + rowEdited + '').setValue(ss.getRange('AD' + rowEdited + '').getValue())
+    return ss.getRange('Y' + rowEdited + '').setValue(ss.getRange('AE' + rowEdited + '').getValue())
   }
 }
 
@@ -256,11 +259,13 @@ function deleteCreateEvents(email, dueDiligenceOldDate, financingOldDate, settle
     eventName = '' + buyerName + ' - Due Diligence Deadline'
     newEvent = calendar.createAllDayEvent(eventName, new Date(dueDiligenceDate),{location: ''})
     ss.getRange('W' + rowNum + '').setValue(dueDiligenceDate).setNumberFormat('m"/"d"/"yy')
+    ss.getRange('AC' + rowNum + '').setValue(dueDiligenceDate).setNumberFormat('m"/"d"/"yy')
   }
   
   // Set Due Diligence date to N/A
   else if (dueDiligenceDate === 'N/A'){
     ss.getRange('W' + rowNum + '').setValue('N/A')
+    ss.getRange('AC' + rowNum + '').setValue('N/A')
   }
   
   // If a new F&A date is entered
@@ -278,11 +283,13 @@ function deleteCreateEvents(email, dueDiligenceOldDate, financingOldDate, settle
     eventName = '' + buyerName + ' - F&A Deadline'
     newEvent = calendar.createAllDayEvent(eventName, new Date(financingDate),{location: ''})
     ss.getRange('X' + rowNum + '').setValue(financingDate).setNumberFormat('m"/"d"/"yy')
+    ss.getRange('AD' + rowNum + '').setValue(financingDate).setNumberFormat('m"/"d"/"yy')
   }
   
   // Set Due Diligence date to N/A
   else if (financingDate === 'N/A'){
     ss.getRange('X' + rowNum + '').setValue('N/A')
+    ss.getRange('AD' + rowNum + '').setValue('N/A')
   }
   
   // If a new Settlement date is entered
@@ -300,11 +307,13 @@ function deleteCreateEvents(email, dueDiligenceOldDate, financingOldDate, settle
     eventName = '' + buyerName + ' - Settlement & Closing Deadline'
     newEvent = calendar.createAllDayEvent(eventName, new Date(settlementDate),{location: ''})
     ss.getRange('Y' + rowNum + '').setValue(settlementDate).setNumberFormat('m"/"d"/"yy')
+    ss.getRange('AE' + rowNum + '').setValue(settlementDate).setNumberFormat('m"/"d"/"yy')
   }
   
   // Set Due Diligence date to N/A
   else if (settlementDate === 'N/A'){
     ss.getRange('Y' + rowNum + '').setValue('N/A')
+    ss.getRange('AE' + rowNum + '').setValue('N/A')
   }
   
   // Send out UC emails if there aren't any existing deadlines and it's not the 2nd time through this function
@@ -471,6 +480,7 @@ function deleteEvents(){
   
   // Clear previous dates from buyer row
   ss.getRange('W' + rowNum + ':Y' + rowNum + '').clear({contentsOnly: true})
+  ss.getRange('AC' + rowNum + ':AE' + rowNum + '').clear({contentsOnly: true})
   
   // Reset the formatting for the date inputs 
   redoInputFormats()
