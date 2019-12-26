@@ -115,39 +115,39 @@ function onEdit(e){
 
   // Alert if dates are manually added to row.
   else if (sheetName === 'Opportunities' && (columnEdited === 23 || columnEdited === 24 || columnEdited === 25) && rowEdited > 2){
-    return alertUser('Use the form above to create/delete deadlines.')
+    return alertUser('Use the form above to create/delete contract deadlines.')
   }
 }
 
 function moveToOpp(rowEdited){
   var ss = SpreadsheetApp.getActive();
   ss.getSheetByName('Opportunities').insertRowsBefore(4,1)
-  var range = "A"+rowEdited+":AB"+rowEdited+""
-  ss.getRange(range).copyTo(ss.getSheetByName('Opportunities').getRange('A4:AB4'), SpreadsheetApp.CopyPasteType.PASTE_VALUES, false)
+  var range = "A"+rowEdited+":"+rowEdited+""
+  ss.getRange(range).copyTo(ss.getSheetByName('Opportunities').getRange('A4:4'), SpreadsheetApp.CopyPasteType.PASTE_VALUES, false)
   ss.deleteRows(rowEdited, 1)
 }
 
 function moveToWarm(rowEdited){
   var ss = SpreadsheetApp.getActive();
   ss.getSheetByName('New/Warm Leads').insertRowsBefore(4,1)
-  var range = "A"+rowEdited+":AB"+rowEdited+""
-  ss.getRange(range).copyTo(ss.getSheetByName('New/Warm Leads').getRange('A4:AB4'), SpreadsheetApp.CopyPasteType.PASTE_VALUES, false)
+  var range = "A"+rowEdited+":"+rowEdited+""
+  ss.getRange(range).copyTo(ss.getSheetByName('New/Warm Leads').getRange('A4:4'), SpreadsheetApp.CopyPasteType.PASTE_VALUES, false)
   ss.deleteRows(rowEdited, 1)
 }
 
 function moveToCold(rowEdited){
   var ss = SpreadsheetApp.getActive();
   ss.getSheetByName('Cold Leads').insertRowsBefore(4,1)
-  var range = "A"+rowEdited+":AB"+rowEdited+""
-  ss.getRange(range).copyTo(ss.getSheetByName('Cold Leads').getRange('A4:AB4'), SpreadsheetApp.CopyPasteType.PASTE_VALUES, false)
+  var range = "A"+rowEdited+":"+rowEdited+""
+  ss.getRange(range).copyTo(ss.getSheetByName('Cold Leads').getRange('A4:4'), SpreadsheetApp.CopyPasteType.PASTE_VALUES, false)
   ss.deleteRows(rowEdited, 1)
 }
 
 function archive(rowEdited){
   var ss = SpreadsheetApp.getActive();
   ss.getSheetByName('Archive').insertRowsBefore(4,1)
-  var range = "A"+rowEdited+":AB"+rowEdited+""
-  ss.getRange(range).copyTo(ss.getSheetByName('Archive').getRange('A4:AB4'), SpreadsheetApp.CopyPasteType.PASTE_VALUES, false)
+  var range = "A"+rowEdited+":"+rowEdited+""
+  ss.getRange(range).copyTo(ss.getSheetByName('Archive').getRange('A4:4'), SpreadsheetApp.CopyPasteType.PASTE_VALUES, false)
   ss.deleteRows(rowEdited, 1)
 }
 
