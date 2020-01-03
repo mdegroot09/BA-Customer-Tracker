@@ -166,6 +166,11 @@ function moveToOpp(rowEdited){
   var range = "A"+rowEdited+":"+rowEdited+""
   ss.getRange(range).copyTo(ss.getSheetByName('Opportunities').getRange('A4:4'), SpreadsheetApp.CopyPasteType.PASTE_VALUES, false)
   ss.deleteRows(rowEdited, 1)
+  
+  ss.getSheetByName('Opportunities').getRange('V2')
+  .setDataValidation(
+    SpreadsheetApp.newDataValidation().setAllowInvalid(true).requireValueInRange(ss.getRange('Opportunities!$A$4:$A'), true).build()
+  )
 }
 
 function moveToWarm(rowEdited){
@@ -356,7 +361,7 @@ function deleteCreateEvents(email, dueDiligenceOldDate, financingOldDate, settle
   
   // Send out UC emails if there aren't any existing deadlines and it's not the 2nd time through this function
   if (!dueDiligenceOldDate && !financingOldDate && !settlementOldDate && email !== 'homie.com_1cs8eji9ahpmol4rvqllcq8bco@group.calendar.google.com'){
-    sendUCEmails(email)
+    //    sendUCEmails(email)
   }
 }
 
