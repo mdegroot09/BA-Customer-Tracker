@@ -153,6 +153,11 @@ function onEdit(e){
     ss.getRange('X' + rowEdited + '').setValue(ss.getRange('AD' + rowEdited + '').getValue())
     return ss.getRange('Y' + rowEdited + '').setValue(ss.getRange('AE' + rowEdited + '').getValue())
   }
+  
+  // Archive closed buyers who are already
+  else if ((sheetName === 'Opportunities' || sheetName === 'New/Warm Leads' || sheetName === 'Cold Leads') && columnEdited === 26 && val !== '' && ss.getRange('G' + rowEdited).getValue() === 'Closed'){
+    archive(rowEdited)
+  }
 }
 
 function moveToOpp(rowEdited){
