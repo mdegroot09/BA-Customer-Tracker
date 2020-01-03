@@ -554,8 +554,8 @@ function addBuyer(){
   ss.getRange('Q4').setFormula('=IF(J4="","",IFS(J4="TBD","TBD",MONTH(J4)=1,"January",MONTH(J4)=2,"February",MONTH(J4)=3,"March",MONTH(J4)=4,"April",MONTH(J4)=5,"May",MONTH(J4)=6,"June",MONTH(J4)=7,"July",MONTH(J4)=8,"August",MONTH(J4)=9,"September",MONTH(J4)=10,"October",MONTH(J4)=11,"November",MONTH(J4)=12,"December"))');
   ss.getRange('R4').setFormula('=IF(J4="","",IF(J4="TBD","TBD",year(J4)))');
   ss.getRange('S4').setFormula('=IFS(N4="TBD","TBD",N4="","",N4>0,O4&" "&N4)');
-  ss.getRange('AA4').setValue('=TODAY()')
   ss.getRange('AA4').setNumberFormat('m"/"d" "h":"mma/p')
+  ss.getRange('AA4').setValue('=NOW()')
   var date = ss.getRange('AA4').getValue()
   ss.getRange('AA4').setValue(date)
   
