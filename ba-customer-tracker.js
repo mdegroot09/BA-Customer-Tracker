@@ -22,7 +22,18 @@ function onEdit(e){
     
     // Moving from New/Warm Lead to Archive 
     else if ((val === 'Closed' && columnEdited === 7) || ((val === 'Lost' || val === 'Abandoned') && columnEdited === 12)){
-      return archive(rowEdited)
+      if (val === 'Closed'){
+        var closedDateExists = checkClosedDate(rowEdited)
+        if (!closedDateExists) {
+          return
+        }
+        else {
+          return archive(rowEdited)
+        }
+      }
+      else {
+        return archive(rowEdited)
+      }
     }
   }
   
@@ -43,7 +54,18 @@ function onEdit(e){
     
     // Moving from Cold Lead to Archive  
     else if ((val === 'Closed' && columnEdited === 7) || ((val === 'Lost' || val === 'Abandoned') && columnEdited === 12)){
-      return archive(rowEdited)
+      if (val === 'Closed'){
+        var closedDateExists = checkClosedDate(rowEdited)
+        if (!closedDateExists) {
+          return
+        }
+        else {
+          return archive(rowEdited)
+        }
+      }
+      else {
+        return archive(rowEdited)
+      }
     }
   }
   
@@ -64,7 +86,18 @@ function onEdit(e){
     
     // Moving from Opportunity to Archive 
     else if ((val === 'Closed' && columnEdited === 7) || ((val === 'Lost' || val === 'Abandoned') && columnEdited === 12)){
-      return archive(rowEdited)
+      if (val === 'Closed'){
+        var closedDateExists = checkClosedDate(rowEdited)
+        if (!closedDateExists) {
+          return
+        }
+        else {
+          return archive(rowEdited)
+        }
+      }
+      else {
+        return archive(rowEdited)
+      }
     }
   }
   
@@ -401,6 +434,15 @@ function resetOldDateFormats(rowNum){
   ss.getRange('Y' + rowNum + '').setNumberFormat('m"/"d"/"yy').getValue()
 }
 
+function checkClosedDate(rowEdited){
+  var ss = SpreadsheetApp.getActive()
+  var closedDate = ss.getRange('Z' + rowEdited).getValue()
+  if (!closedDate){
+    var ui = SpreadsheetApp.getUi();
+    ui.alert('Enter a closed date into cell: Z' + rowEdited);
+  }
+}
+
 function deleteEvents(){
   var ss = SpreadsheetApp.getActive()
   var buyerName = ss.getRange('V2').getValue()
@@ -408,7 +450,7 @@ function deleteEvents(){
   // If no buyer is selected, throw an error
   if (!buyerName){
     makeBuyerRed()
-    return alertUser('Please enter a buyer name.')
+    return alertUser('Enter a buyer name.')
   }
   
   // Get row number of buyer being changed
@@ -461,7 +503,7 @@ function deleteEvents(){
       calendar.getEventById(dueDiligenceID).deleteEvent()
     }
   }
-    
+
   // If previous F&A exists, find event and delete
   if (financingOldDate && financingOldDate !== 'N/A'){
     var financingID = getIdFromName('' + buyerName + ' - F&A Deadline', financingOldDate, email)
