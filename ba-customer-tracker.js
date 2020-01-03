@@ -440,6 +440,10 @@ function checkClosedDate(rowEdited){
   if (!closedDate){
     var ui = SpreadsheetApp.getUi();
     ui.alert('Enter a closed date into cell: Z' + rowEdited);
+    return false
+  }
+  else {
+    return true
   }
 }
 
