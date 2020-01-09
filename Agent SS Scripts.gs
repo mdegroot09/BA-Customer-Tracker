@@ -575,4 +575,7 @@ function updateLastChange(rowEdited){
   ss.getRange('AF' + rowEdited).setValue("=NOW()").setNumberFormat('m"/"d"/"yy')
   var date = ss.getRange('AF' + rowEdited).getValue()
   ss.getRange('AF' + rowEdited).setValue(date)
+  
+  // Hide last columns
+  ss.getActiveSheet().hideColumn(ss.getRange('AC:AF'));
 }
