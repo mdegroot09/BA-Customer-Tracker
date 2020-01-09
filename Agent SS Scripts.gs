@@ -5,6 +5,11 @@ function onEdit(e){
   var ss = SpreadsheetApp.getActive();
   var sheetName = ss.getActiveSheet().getName()
   
+  // Check for stage or status and update Last Changed column
+  if (columnEdited === 7 || columnEdited === 12){
+    updateLastChange(rowEdited)
+  }
+  
   // Check for stage or status change in New/Warm Leads tab 
   if (sheetName === 'New/Warm Leads' && (columnEdited === 7 || columnEdited === 12)){
     var cell = range.getA1Notation()
@@ -563,4 +568,11 @@ function addBuyer(){
   .setDataValidation(
     SpreadsheetApp.newDataValidation().setAllowInvalid(true).requireValueInRange(ss.getRange('Opportunities!$A$4:$A'), true).build()
   )
+}
+
+function updateLastChange(rowEdited){
+  var ss = SpreadsheetApp.getActive()
+  ss.getRange('AF' + rowEdited).setValue("=NOW()").setNumberFormat('m"/"d"/"yy')
+  var date = ss.getRange('AF' + rowEdited).getValue()
+  ss.getRange('AF' + rowEdited).setValue(date)
 }
