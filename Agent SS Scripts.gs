@@ -579,3 +579,62 @@ function updateLastChange(rowEdited){
   // Hide last columns
   ss.getActiveSheet().hideColumn(ss.getRange('AC:AF'));
 }
+
+function onOpen() {
+  SpreadsheetApp.getUi()
+  .createMenu('UC Menu')
+  .addItem('Convert to UC', 'convertUC')
+  .addToUi();
+}
+
+function convertUC() {
+  var ui = SpreadsheetApp.getUi(); 
+  
+  var ss = SpreadsheetApp.getActive()
+  var range = ss.getRange("A:A")
+  var columnAValues = range.getValues()
+
+  var result = ui.prompt(
+      'Buyer Name',
+      "Please enter the Buyer's name:",
+      ui.ButtonSet.OK_CANCEL);
+
+  // Process the user's response.
+  var button = result.getSelectedButton();
+  var name = result.getResponseText();
+  
+  // If user clicked "OK"
+  if (button == ui.Button.OK) {
+    
+    var buyerRow = findBuyerName(name, columnAValues)
+    
+    // if buyerRow is not an empty string
+    if (buyerRow){
+      ui.alert('Buyer "' + name + '" found in cell A' + buyerRow)
+    }
+    
+    // if buyerRow is an empty string
+    else {
+      ui.alert('"' + name + '" not found in Opportunities. Please check the spelling and try again.')
+    }
+  } 
+}
+
+function findBuyerName(name, columnAValues){
+  var ss = SpreadsheetApp.getActive()
+  var ui = SpreadsheetApp.getUi()
+  
+  // Look for buyer name entered in column A
+  var j = 0
+  for (var i = 4; i < columnAValues.length; i++){
+    if (ss.getRange('A' + i).getValue() && name === ss.getRange('A' + i).getValue()){
+      return i
+    }
+    if (!ss.getRange('A' + i).getValue()){
+      j++
+    }
+    if (j === 3){
+      return ''
+    }
+  }
+}
