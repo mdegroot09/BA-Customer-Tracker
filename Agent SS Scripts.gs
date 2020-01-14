@@ -585,6 +585,11 @@ function onOpen() {
   .createMenu('UC Menu')
   .addItem('Convert to UC', 'convertUC')
   .addToUi();
+  
+  SpreadsheetApp.getUi()
+  .createMenu('Enter Deadline')
+  .addItem('Enter Deadline', 'enterDeadline')
+  .addToUi();
 }
 
 function convertUC() {
@@ -610,7 +615,27 @@ function convertUC() {
     
     // if buyerRow is not an empty string
     if (buyerRow){
-      ui.alert('Buyer "' + name + '" found in cell A' + buyerRow)
+      
+      // If cancelled or closed, end macro
+      var dueDiligenceDate = enterDeadline('Due Diligence')
+      if (dueDiligenceDate === 'error'){
+        return 
+      }
+      
+      // If cancelled or closed, end macro
+      var financingDate = enterDeadline('Financing & Appraisal')
+      if (financingDate === 'error'){
+        return 
+      }
+      
+      // If cancelled or closed, end macro
+      var settlementDate = enterDeadline('Settlement')
+      if (settlementDate === 'error'){
+        return 
+      }
+      
+      return ui.alert('dueDiligenceDate: ' + dueDiligenceDate + ', financingDate: ' + financingDate + ', settlementDate: ' + settlementDate)
+      return updateCalendar()
     }
     
     // if buyerRow is an empty string
@@ -636,5 +661,58 @@ function findBuyerName(name, columnAValues){
     if (j === 3){
       return ''
     }
+  }
+}
+
+function enterDeadline(deadline){
+  var ui = SpreadsheetApp.getUi()
+  var response = ui.prompt(
+    deadline,
+    "Please enter the " + deadline + " Deadline:",
+    ui.ButtonSet.OK_CANCEL);
+  
+  var button = response.getSelectedButton()
+  var date = response.getResponseText()
+  var dateCheck = ''
+  
+  // Attempt to convert to a date with the input
+  try {
+    dateCheck = new Date(date)
+    return date
+  }
+  
+  // catch date conversion error
+  catch (e){}
+  
+  if (button == 'OK'){
+  
+    // keep asking for date until valid date is entered
+    while (!dateCheck){
+      response = ui.prompt(
+        deadline,
+        'Please enter a valid ' + deadline + ' Deadline (e.g. "' + new Date() + '"):',
+        ui.ButtonSet.OK_CANCEL)
+        
+      // If button clicked isn't "OK", return error
+      button = response.getSelectedButton()
+      if (button != 'OK'){
+        return 'error'
+      }
+      
+      // Attempt to convert to a date with the input
+      date = response.getResponseText()
+      try {
+        dateCheck = new Date(date)
+        return date
+      }
+      
+      // catch date conversion errors
+      catch (e){}
+    }   
+  }
+  
+  // If button clicked isn't "OK", return error
+  else {
+    return 'error'
   }
 }
