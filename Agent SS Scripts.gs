@@ -202,92 +202,46 @@ function archive(rowEdited){
   ss.deleteRows(rowEdited, 1)
 }
 
-function updateCalendar(){
+function updateCalendar(dueDiligenceDate, financingDate, settlementDate, rowNum){
   var ss = SpreadsheetApp.getActive()
-  var buyerName = ss.getRange('V2').getValue()
+  var buyerName = ss.getRange('A' + rowNum).getValue()
   
-  // Capture new dates
-  var dueDiligenceDate = ss.getRange('W2').getValue()
-  var financingDate = ss.getRange('X2').getValue()
-  var settlementDate = ss.getRange('Y2').getValue()
+  SpreadsheetApp.getUi().alert('dueDiligenceDate:' + dueDiligenceDate + ', financingDate: ' + financingDate + ', settlementDate: ' + settlementDate + ', rowNum: ' + rowNum)
   
-  // Get row number of buyer being changed
-  var rowNum = ss.getRange('AA1').setFormula('=IFERROR(MATCH(V2,A:A,0),"")').getValue()
-  
-  var dueDiligenceOldDate
-  var financingOldDate
-  var settlementOldDate
+  var dueDiligenceOldDate = ''
+  var financingOldDate = ''
+  var settlementOldDate = ''
   
   // Define OldDate variables if rowNum is valid
   if (rowNum) {
     // Capture old dates
-    dueDiligenceOldDate = ss.getRange('W' + rowNum + '').setNumberFormat('mmmm" "d", "yyyy').getValue()
-    financingOldDate = ss.getRange('X' + rowNum + '').setNumberFormat('mmmm" "d", "yyyy').getValue()
-    settlementOldDate = ss.getRange('Y' + rowNum + '').setNumberFormat('mmmm" "d", "yyyy').getValue()
+    dueDiligenceOldDate = ss.getRange('AC' + rowNum + '').setNumberFormat('mmmm" "d", "yyyy').getValue()
+    financingOldDate = ss.getRange('AD' + rowNum + '').setNumberFormat('mmmm" "d", "yyyy').getValue()
+    settlementOldDate = ss.getRange('AE' + rowNum + '').setNumberFormat('mmmm" "d", "yyyy').getValue()
   }
   
-  // If no buyer is selected, throw an error
-  if (!buyerName){
-    makeBuyerRed()
-    return alertUser('Enter a buyer name.')
-  }
+  // Set format of old dates
+  ss.getRange('AC' + rowNum + ':AE' + rowNum + '').setNumberFormat('m"/"d"/"yy')
   
-  // If no dates are selected, throw an error
-  else if (!dueDiligenceDate && !financingDate && !settlementDate){
-    makeDatesRed()
-    
-    if (dueDiligenceOldDate || financingOldDate || settlementOldDate){    
-      alertUser('Enter at least one new date to update your calendar.')
-      return resetOldDateFormats(rowNum)
-    } 
-    
-    else {
-      return alertUser(
-        'Enter all three dates to add them to your calendar. If a date is not applicable (e.g. F&A for a cash deal), enter "N/A" for the date.'
-      )
-    }
-  } 
+  // Capture new dates and change format
+  dueDiligenceDate = ss.getRange('W' + rowNum).setValue(dueDiligenceDate).setNumberFormat('mmmm" "d", "yyyy').getValue()
+  financingDate = ss.getRange('X' + rowNum).setValue(financingDate).setNumberFormat('mmmm" "d", "yyyy').getValue()
+  settlementDate = ss.getRange('Y' + rowNum).setValue(settlementDate).setNumberFormat('mmmm" "d", "yyyy').getValue()
+
+  var email = ss.getSheetByName('Dashboard').getRange('B6').getValue()
+  deleteCreateEvents(email, rowNum, dueDiligenceOldDate, financingOldDate, settlementOldDate, dueDiligenceDate, financingDate, settlementDate)
   
-  // If no previous dates, and not all dates are entered
-  else if ((!dueDiligenceDate || !financingDate || !settlementDate) && !dueDiligenceOldDate && !financingOldDate && !settlementOldDate){
-    makeDatesRed()
-    return alertUser(
-      'Enter all three dates to add them to your calendar. If a date is not applicable (e.g. F&A for a cash deal), enter "N/A" for the date.'
-    )
-  }
+  email = 'homie.com_1cs8eji9ahpmol4rvqllcq8bco@group.calendar.google.com'
+  deleteCreateEvents(email, rowNum, dueDiligenceOldDate, financingOldDate, settlementOldDate, dueDiligenceDate, financingDate, settlementDate)
   
-  // If buyer and at least 1 date entered, delete old events and create new ones
-  else {
-    
-    // Set format of old dates
-    ss.getRange('W' + rowNum + ':Y' + rowNum + '').setNumberFormat('m"/"d"/"yy')
-    
-    // Capture new dates and change format
-    dueDiligenceDate = ss.getRange('W2').setNumberFormat('mmmm" "d", "yyyy').getValue()
-    financingDate = ss.getRange('X2').setNumberFormat('mmmm" "d", "yyyy').getValue()
-    settlementDate = ss.getRange('Y2').setNumberFormat('mmmm" "d", "yyyy').getValue()
-    ss.getRange('W2:Y2').setNumberFormat('m"/"d"/"yy')
-  
-    var email = ss.getSheetByName('Dashboard').getRange('B6').getValue()
-    deleteCreateEvents(email, dueDiligenceOldDate, financingOldDate, settlementOldDate)
-    
-    email = 'homie.com_1cs8eji9ahpmol4rvqllcq8bco@group.calendar.google.com'
-    deleteCreateEvents(email, dueDiligenceOldDate, financingOldDate, settlementOldDate)
-    
-    redoInputFormats()
-    return alertUser('Success! Events have been added to your calendar.')
-  }
+  redoInputFormats()
+  return alertUser('Success! Events have been added to your calendar.')
 }
 
-function deleteCreateEvents(email, dueDiligenceOldDate, financingOldDate, settlementOldDate){
+function deleteCreateEvents(email, rowNum, dueDiligenceOldDate, financingOldDate, settlementOldDate, dueDiligenceDate, financingDate, settlementDate){
   var calendar = CalendarApp.getCalendarById(email)
   var ss = SpreadsheetApp.getActive()
-  var buyerName = ss.getRange('V2').getValue()
-  var dueDiligenceDate = ss.getRange('W2').setNumberFormat('mmmm" "d", "yyyy').getValue()
-  var financingDate = ss.getRange('X2').setNumberFormat('mmmm" "d", "yyyy').getValue()
-  var settlementDate = ss.getRange('Y2').setNumberFormat('mmmm" "d", "yyyy').getValue()
-  ss.getRange('W2:Y2').setNumberFormat('m"/"d"/"yy')
-  var rowNum = ss.getRange('AA1').setFormula('=IFERROR(MATCH(V2,A:A,0),"")').getValue()
+  var buyerName = ss.getRange('A' + rowNum).getValue()
   var eventName = ''
   var newEvent = ''
    
@@ -594,8 +548,8 @@ function onOpen() {
 
 function convertUC() {
   var ui = SpreadsheetApp.getUi(); 
-  
   var ss = SpreadsheetApp.getActive()
+  
   var range = ss.getRange("A:A")
   var columnAValues = range.getValues()
 
@@ -611,34 +565,35 @@ function convertUC() {
   // If user clicked "OK"
   if (button == ui.Button.OK) {
     
-    var buyerRow = findBuyerName(name, columnAValues)
+    var rowNum = findBuyerName(name, columnAValues)
     
-    // if buyerRow is not an empty string
-    if (buyerRow){
+    // if rowNum is not an empty string
+    if (rowNum){
       
-      // If cancelled or closed, end macro
-      var dueDiligenceDate = enterDeadline('Due Diligence')
+      // If cancelled or closed, quit macro
+      var dueDiligenceDate = enterDeadline('Due Diligence', rowNum)
       if (dueDiligenceDate === 'error'){
+        return ui.alert('error')
         return 
-      }
+      } return ui.alert('dueDiligenceDate: ' + dueDiligenceDate)
       
-      // If cancelled or closed, end macro
-      var financingDate = enterDeadline('Financing & Appraisal')
+      // If cancelled or closed, quit macro
+      var financingDate = enterDeadline('Financing & Appraisal', rowNum)
       if (financingDate === 'error'){
         return 
       }
       
-      // If cancelled or closed, end macro
-      var settlementDate = enterDeadline('Settlement')
+      // If cancelled or closed, quit macro
+      var settlementDate = enterDeadline('Settlement', rowNum)
       if (settlementDate === 'error'){
         return 
       }
       
-      return ui.alert('dueDiligenceDate: ' + dueDiligenceDate + ', financingDate: ' + financingDate + ', settlementDate: ' + settlementDate)
-      return updateCalendar()
+      ui.alert('dueDiligenceDate: ' + dueDiligenceDate + ', financingDate: ' + financingDate + ', settlementDate: ' + settlementDate)
+      return updateCalendar(dueDiligenceDate, financingDate, settlementDate, rowNum)
     }
     
-    // if buyerRow is an empty string
+    // if rowNum is an empty string
     else {
       ui.alert('"' + name + '" not found in Opportunities. Please check the spelling and try again.')
     }
@@ -664,8 +619,9 @@ function findBuyerName(name, columnAValues){
   }
 }
 
-function enterDeadline(deadline){
+function enterDeadline(deadline, rowNum){
   var ui = SpreadsheetApp.getUi()
+  
   var response = ui.prompt(
     deadline,
     "Please enter the " + deadline + " Deadline:",
@@ -673,41 +629,35 @@ function enterDeadline(deadline){
   
   var button = response.getSelectedButton()
   var date = response.getResponseText()
-  var dateCheck = ''
   
   // Attempt to convert to a date with the input
-  try {
-    dateCheck = new Date(date)
+  if (!isNaN(new Date(date))){
     return date
   }
   
-  // catch date conversion error
-  catch (e){}
-  
-  if (button == 'OK'){
+  // If button clicked is "OK", continue
+  if (button == ui.Button.OK){
   
     // keep asking for date until valid date is entered
-    while (!dateCheck){
+    while (true){
       response = ui.prompt(
         deadline,
         'Please enter a valid ' + deadline + ' Deadline (e.g. "' + new Date() + '"):',
         ui.ButtonSet.OK_CANCEL)
         
-      // If button clicked isn't "OK", return error
+      // Get button clicked and response
       button = response.getSelectedButton()
-      if (button != 'OK'){
+      date = response.getResponseText()
+        
+      // If button clicked isn't "OK", return error
+      if (button != ui.Button.OK){
         return 'error'
       }
       
       // Attempt to convert to a date with the input
-      date = response.getResponseText()
-      try {
-        dateCheck = new Date(date)
+      if (!isNaN(new Date(date))){
         return date
       }
-      
-      // catch date conversion errors
-      catch (e){}
     }   
   }
   
