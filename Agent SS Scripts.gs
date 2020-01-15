@@ -270,6 +270,12 @@ function convertUC() {
     // if rowNum is not an empty string
     if (rowNum){
       
+      // check for Tools link, throw error if none
+      var toolsLink = ss.getRange('C' + rowNum).getValue()
+      if (!toolsLink){
+        return ui.alert('Buyer first needs a Tools link in cell: C' + rowNum)
+      }
+      
       // If cancelled or closed, quit macro
       var dueDiligenceDate = enterDeadline('Due Diligence', rowNum)
       if (dueDiligenceDate === 'error'){
@@ -288,13 +294,12 @@ function convertUC() {
         return 
       }
       
-      ui.alert('dueDiligenceDate: ' + dueDiligenceDate + ', financingDate: ' + financingDate + ', settlementDate: ' + settlementDate)
       return updateCalendar(dueDiligenceDate, financingDate, settlementDate, rowNum)
     }
     
     // if rowNum is an empty string
     else {
-      ui.alert('"' + name + '" not found in Opportunities. Please check the spelling and try again.')
+      return ui.alert('"' + name + '" not found in Opportunities. Please check the spelling and try again.')
     }
   } 
 }
@@ -368,9 +373,9 @@ function enterDeadline(deadline, rowNum){
 
 function updateCalendar(dueDiligenceDate, financingDate, settlementDate, rowNum){
   var ss = SpreadsheetApp.getActive()
-  var buyerName = ss.getRange('A' + rowNum).getValue()
+  var ui = SpreadsheetApp.getUi()
   
-  SpreadsheetApp.getUi().alert('dueDiligenceDate:' + dueDiligenceDate + ', financingDate: ' + financingDate + ', settlementDate: ' + settlementDate + ', rowNum: ' + rowNum)
+  var buyerName = ss.getRange('A' + rowNum).getValue()
   
   var dueDiligenceOldDate = ''
   var financingOldDate = ''
@@ -401,7 +406,22 @@ function updateCalendar(dueDiligenceDate, financingDate, settlementDate, rowNum)
   // Change status to 'UC'
   ss.getRange('G' + rowNum).setValue('UC')
   
-  return alertUser('Success! Events have been added to your calendar.')
+  // Ask for permission to send CCs an email
+  var response = ui.alert('Success! Deadlines have been added to your calendar. \r\n \r\n' +
+    'Do you want to send the closing coordinators an email?', ui.ButtonSet.YES_NO);
+  
+  // Check for a YES click then send email
+  if (response == ui.Button.YES) {
+    sendEmail('UC', rowNum)
+    
+    return alertUser('Success! Email has been sent.')
+  } 
+  
+  // 
+  else {
+    return alertUser("No email sent. \r\n \r\n" + 
+      'Make sure you let closings@homie.com know that ' + buyerName + ' is under contract.')
+  }
 }
 
 function deleteCreateEvents(email, rowNum, dueDiligenceOldDate, financingOldDate, settlementOldDate, dueDiligenceDate, financingDate, settlementDate){
@@ -486,7 +506,7 @@ function deleteCreateEvents(email, rowNum, dueDiligenceOldDate, financingOldDate
   
   // Send out UC emails if there aren't any existing deadlines and it's not the 2nd time through this function
   if (!dueDiligenceOldDate && !financingOldDate && !settlementOldDate && email !== 'homie.com_1cs8eji9ahpmol4rvqllcq8bco@group.calendar.google.com'){
-    //    sendUCEmails(email)
+    //    sendEmail(email)
   }
 }
 
@@ -505,39 +525,42 @@ function getIdFromName(name, date, email){
   return ''
 }
 
-function sendUCEmails(type, agentName, emailAddress, toolsLink, buyerName){
+function sendEmail(type, rowNum){
   var ss = SpreadsheetApp.getActive()
+  
+  var agentName = ss.getSheetByName('Dashboard').getRange('A6').getValue()
+  var emailAddress = ss.getSheetByName('Dashboard').getRange('B6').getValue()
+  var toolsLink = ss.getRange('C' + rowNum).getValue()
+  var buyerName = ss.getRange('A' + rowNum).getValue()
   
   // If converting to UC
   if (type === 'UC'){
-    
-    var toolsHTML = ''
-    
-    // check for toolsLink
-    if (toolsLink){
-      toolsHTML = "Here is the link to the Offer in Tools: " + toolsLink + "<br><br>"
-    }
-    
     MailApp.sendEmail({
       // to: email + "," + 'mdegroot09@gmail.com',
       to: emailAddress,
-      subject: buyerName + " Under Contract", 
+      subject: buyerName + ' Under Contract', 
       htmlBody: 
-      buyerName + " is now under contract<br><br>" +
-      toolsHTML + 
-      "Thanks,<br>" +
-      agentName
+        'Closing Coordinators, <br><br>' +
+        buyerName + ' is now under contract.<br><br>' +
+        "Here's the link to the offer in Tools: " + toolsLink + '<br><br>' + 
+        'Let me know if you need anything else.' + '<br><br>' + 
+        'Thanks!<br>' +
+        agentName
     })
   }
   
+  // If cancelling contract
   else if (type === 'Cancelled'){
     MailApp.sendEmail({
       to: emailAddress,
-      subject: "Contract Cancelled", 
+      subject: buyerName + ' Contract Cancelled', 
       htmlBody: 
-      "You're under contract!<br><br>" +
-      "Thanks,<br>" +
-      "<img src='https://simplejoys.s3.us-east-2.amazonaws.com/email%20signature-1576377050955.png'>"
+        'Closing Coordinators, <br><br>' +
+        buyerName + ' has cancelled the contract.<br><br>' +
+        "Here's the link to the offer in Tools: " + toolsLink + '<br><br>' + 
+        'Let me know if you need anything else.' + '<br><br>' + 
+        'Thanks,<br>' +
+        agentName
     })
   }
 }
@@ -672,6 +695,20 @@ function cancelContract(){
   // Change stage to Cancelled
   ss.getRange('G' + rowNum).setValue('Cancelled')
   
-  // Success alert
-  alertUser('Events were successfully deleted from your calendar.')
+  // Ask for permission to send CCs an email
+  var response = ui.alert('Success. Deadlines have been deleted from your calendar. \r\n \r\n' +
+    'Do you want to let the closing coordinators know?', ui.ButtonSet.YES_NO);
+  
+  // Check for a YES click then send email
+  if (response == ui.Button.YES) {
+    sendEmail('Cancelled', rowNum)
+    
+    return alertUser('Success. Email has been sent.')
+  } 
+  
+  // 
+  else {
+    return alertUser("No email sent. \r\n \r\n" + 
+      'Make sure you let closings@homie.com know that ' + buyerName + ' has cancelled the contract.')
+  }
 }
