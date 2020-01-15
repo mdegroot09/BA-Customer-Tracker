@@ -408,7 +408,7 @@ function updateCalendar(dueDiligenceDate, financingDate, settlementDate, rowNum)
   
   // Ask for permission to send CCs an email
   var response = ui.alert('Success! Deadlines have been added to your calendar. \r\n \r\n' +
-    'Do you want to send the closing coordinators an email?', ui.ButtonSet.YES_NO);
+    'Do you want to email the closing coordinators saying ' + buyerName + ' is under contract? \r\n \r\n', ui.ButtonSet.YES_NO);
   
   // Check for a YES click then send email
   if (response == ui.Button.YES) {
@@ -697,7 +697,7 @@ function cancelContract(){
   
   // Ask for permission to send CCs an email
   var response = ui.alert('Success. Deadlines have been deleted from your calendar. \r\n \r\n' +
-    'Do you want to let the closing coordinators know?', ui.ButtonSet.YES_NO);
+    'Do you want to email the closing coordinators saying this deal was cancelled? \r\n \r\n', ui.ButtonSet.YES_NO);
   
   // Check for a YES click then send email
   if (response == ui.Button.YES) {
