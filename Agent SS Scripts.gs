@@ -398,7 +398,9 @@ function updateCalendar(dueDiligenceDate, financingDate, settlementDate, rowNum)
   email = 'homie.com_1cs8eji9ahpmol4rvqllcq8bco@group.calendar.google.com'
   deleteCreateEvents(email, rowNum, dueDiligenceOldDate, financingOldDate, settlementOldDate, dueDiligenceDate, financingDate, settlementDate)
   
-//  redoInputFormats()
+  // Change status to 'UC'
+  ss.getRange('G' + rowNum).setValue('UC')
+  
   return alertUser('Success! Events have been added to your calendar.')
 }
 
@@ -512,23 +514,6 @@ function sendUCEmails(email){
     "Thanks,<br>" +
     "<img src='https://simplejoys.s3.us-east-2.amazonaws.com/email%20signature-1576377050955.png'>"
   })
-}
-
-function redoInputFormats() {
-  var ss = SpreadsheetApp.getActive()
-  ss.getRange('V2:Y2')
-  .clear({contentsOnly: true})
-  .setBackground('#7fa0af')
-  .setFontColor('#ffffff')
-  .setHorizontalAlignment('center')
-  .setVerticalAlignment('middle')
-  .setFontFamily('Verdana')
-  .setFontSize(10)
-  .setNumberFormat('m"/"d"/"yy')
-  ss.getRange('X1:X2').setBorder(true, true, true, true, null, null, '#999999', SpreadsheetApp.BorderStyle.SOLID_MEDIUM)
-  ss.getRange('W1:W2').setBorder(true, true, true, true, null, null, '#999999', SpreadsheetApp.BorderStyle.SOLID_MEDIUM)
-  ss.getRange('V1:V2').setBorder(true, true, true, true, null, null, '#999999', SpreadsheetApp.BorderStyle.SOLID_MEDIUM)
-  ss.getRange('V1:Y2').setBorder(true, true, true, true, null, null, '#ffffff', SpreadsheetApp.BorderStyle.SOLID_MEDIUM)
 }
 
 function makeBuyerRed() {
@@ -682,8 +667,8 @@ function cancelContract(){
   ss.getRange('W' + rowNum + ':Y' + rowNum + '').clear({contentsOnly: true})
   ss.getRange('AC' + rowNum + ':AE' + rowNum + '').clear({contentsOnly: true})
   
-  // Reset the formatting for the date inputs 
-//  redoInputFormats()
+  // Change stage to Cancelled
+  ss.getRange('G' + rowNum).setValue('Cancelled')
   
   // Success alert
   alertUser('Events were successfully deleted from your calendar.')
