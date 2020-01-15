@@ -417,7 +417,7 @@ function updateCalendar(dueDiligenceDate, financingDate, settlementDate, rowNum)
     return alertUser('Success! Email has been sent.')
   } 
   
-  // 
+  // If NO is selected
   else {
     return alertUser("No email sent. \r\n \r\n" + 
       'Make sure you let closings@homie.com know that ' + buyerName + ' is under contract.')
@@ -502,11 +502,6 @@ function deleteCreateEvents(email, rowNum, dueDiligenceOldDate, financingOldDate
   else if (settlementDate === 'N/A'){
     ss.getRange('Y' + rowNum + '').setValue('N/A')
     ss.getRange('AE' + rowNum + '').setValue('N/A')
-  }
-  
-  // Send out UC emails if there aren't any existing deadlines and it's not the 2nd time through this function
-  if (!dueDiligenceOldDate && !financingOldDate && !settlementOldDate && email !== 'homie.com_1cs8eji9ahpmol4rvqllcq8bco@group.calendar.google.com'){
-    //    sendEmail(email)
   }
 }
 
@@ -706,7 +701,7 @@ function cancelContract(){
     return alertUser('Success. Email has been sent.')
   } 
   
-  // 
+  // If NO is selected
   else {
     return alertUser("No email sent. \r\n \r\n" + 
       'Make sure you let closings@homie.com know that ' + buyerName + ' has cancelled the contract.')
