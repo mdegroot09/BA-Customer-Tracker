@@ -573,9 +573,8 @@ function convertUC() {
       // If cancelled or closed, quit macro
       var dueDiligenceDate = enterDeadline('Due Diligence', rowNum)
       if (dueDiligenceDate === 'error'){
-        return ui.alert('error')
         return 
-      } return ui.alert('dueDiligenceDate: ' + dueDiligenceDate)
+      } 
       
       // If cancelled or closed, quit macro
       var financingDate = enterDeadline('Financing & Appraisal', rowNum)
