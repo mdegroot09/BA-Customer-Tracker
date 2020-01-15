@@ -505,38 +505,40 @@ function getIdFromName(name, date, email){
   return ''
 }
 
-function sendUCEmails(email){
-  MailApp.sendEmail({
-    to: email + "," + 'mdegroot09@gmail.com',
-    subject: "Under Contract Next Steps", 
-    htmlBody: 
-    "You're under contract!<br><br>" +
-    "Thanks,<br>" +
-    "<img src='https://simplejoys.s3.us-east-2.amazonaws.com/email%20signature-1576377050955.png'>"
-  })
-}
-
-function makeBuyerRed() {
-  var ss = SpreadsheetApp.getActive();
-  return ss.getRange('V2').setBackground('#f4cccc').setFontColor('#303f46');
-}
-
-function makeDatesRed() {
-  var ss = SpreadsheetApp.getActive();
-  var dueDiligenceDate = ss.getRange('W2').getValue()
-  var financingDate = ss.getRange('X2').getValue()
-  var settlementDate = ss.getRange('Y2').getValue()
+function sendUCEmails(type, agentName, emailAddress, toolsLink, buyerName){
+  var ss = SpreadsheetApp.getActive()
   
-  if (!dueDiligenceDate){
-    ss.getRange('W2').setBackground('#f4cccc').setFontColor('#303f46')
-  }
+  // If converting to UC
+  if (type === 'UC'){
     
-  if (!financingDate){
-    ss.getRange('X2').setBackground('#f4cccc').setFontColor('#303f46')
-  }
+    var toolsHTML = ''
     
-  if (!settlementDate){
-    ss.getRange('Y2').setBackground('#f4cccc').setFontColor('#303f46')
+    // check for toolsLink
+    if (toolsLink){
+      toolsHTML = "Here is the link to the Offer in Tools: " + toolsLink + "<br><br>"
+    }
+    
+    MailApp.sendEmail({
+      // to: email + "," + 'mdegroot09@gmail.com',
+      to: emailAddress,
+      subject: buyerName + " Under Contract", 
+      htmlBody: 
+      buyerName + " is now under contract<br><br>" +
+      toolsHTML + 
+      "Thanks,<br>" +
+      agentName
+    })
+  }
+  
+  else if (type === 'Cancelled'){
+    MailApp.sendEmail({
+      to: emailAddress,
+      subject: "Contract Cancelled", 
+      htmlBody: 
+      "You're under contract!<br><br>" +
+      "Thanks,<br>" +
+      "<img src='https://simplejoys.s3.us-east-2.amazonaws.com/email%20signature-1576377050955.png'>"
+    })
   }
 }
 
