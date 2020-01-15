@@ -202,6 +202,170 @@ function archive(rowEdited){
   ss.deleteRows(rowEdited, 1)
 }
 
+
+
+function addBuyer(){
+  var ss = SpreadsheetApp.getActive();
+  ss.insertRowsBefore(4,1)
+  
+  ss.getRange('L4').setValue('Open')
+  ss.getRange('O4').setFormula('=IF(B4="","",VLOOKUP(B4,Setting!A:B,2,false))')
+  ss.getRange('Q4').setFormula('=IF(J4="","",IFS(J4="TBD","TBD",MONTH(J4)=1,"January",MONTH(J4)=2,"February",MONTH(J4)=3,"March",MONTH(J4)=4,"April",MONTH(J4)=5,"May",MONTH(J4)=6,"June",MONTH(J4)=7,"July",MONTH(J4)=8,"August",MONTH(J4)=9,"September",MONTH(J4)=10,"October",MONTH(J4)=11,"November",MONTH(J4)=12,"December"))');
+  ss.getRange('R4').setFormula('=IF(J4="","",IF(J4="TBD","TBD",year(J4)))');
+  ss.getRange('S4').setFormula('=IFS(N4="TBD","TBD",N4="","",N4>0,O4&" "&N4)');
+  ss.getRange('AA4').setNumberFormat('m"/"d" "h":"mma/p')
+  ss.getRange('AA4').setValue('=NOW()')
+  var date = ss.getRange('AA4').getValue()
+  ss.getRange('AA4').setValue(date)
+  
+  ss.getSheetByName('Opportunities').getRange('V2')
+  .setDataValidation(
+    SpreadsheetApp.newDataValidation().setAllowInvalid(true).requireValueInRange(ss.getRange('Opportunities!$A$4:$A'), true).build()
+  )
+}
+
+function updateLastChange(rowEdited){
+  var ss = SpreadsheetApp.getActive()
+  ss.getRange('AF' + rowEdited).setValue("=NOW()").setNumberFormat('m"/"d"/"yy')
+  var date = ss.getRange('AF' + rowEdited).getValue()
+  ss.getRange('AF' + rowEdited).setValue(date)
+  
+  // Hide last columns
+  ss.getActiveSheet().hideColumn(ss.getRange('AC:AF'));
+}
+
+function onOpen() {
+  SpreadsheetApp.getUi()
+  .createMenu('UC Menu')
+  .addItem('Convert to UC', 'convertUC')
+  .addToUi();
+  
+  SpreadsheetApp.getUi()
+  .createMenu('Enter Deadline')
+  .addItem('Enter Deadline', 'enterDeadline')
+  .addToUi();
+}
+
+function convertUC() {
+  var ui = SpreadsheetApp.getUi(); 
+  var ss = SpreadsheetApp.getActive()
+  
+  var range = ss.getRange("A:A")
+  var columnAValues = range.getValues()
+
+  var result = ui.prompt(
+      'Buyer Name',
+      "Please enter the Buyer's name:",
+      ui.ButtonSet.OK_CANCEL);
+
+  // Process the user's response.
+  var button = result.getSelectedButton();
+  var name = result.getResponseText();
+  
+  // If user clicked "OK"
+  if (button == ui.Button.OK) {
+    
+    var rowNum = findBuyerName(name, columnAValues)
+    
+    // if rowNum is not an empty string
+    if (rowNum){
+      
+      // If cancelled or closed, quit macro
+      var dueDiligenceDate = enterDeadline('Due Diligence', rowNum)
+      if (dueDiligenceDate === 'error'){
+        return 
+      } 
+      
+      // If cancelled or closed, quit macro
+      var financingDate = enterDeadline('Financing & Appraisal', rowNum)
+      if (financingDate === 'error'){
+        return 
+      }
+      
+      // If cancelled or closed, quit macro
+      var settlementDate = enterDeadline('Settlement', rowNum)
+      if (settlementDate === 'error'){
+        return 
+      }
+      
+      ui.alert('dueDiligenceDate: ' + dueDiligenceDate + ', financingDate: ' + financingDate + ', settlementDate: ' + settlementDate)
+      return updateCalendar(dueDiligenceDate, financingDate, settlementDate, rowNum)
+    }
+    
+    // if rowNum is an empty string
+    else {
+      ui.alert('"' + name + '" not found in Opportunities. Please check the spelling and try again.')
+    }
+  } 
+}
+
+function findBuyerName(name, columnAValues){
+  var ss = SpreadsheetApp.getActive()
+  var ui = SpreadsheetApp.getUi()
+  
+  // Look for buyer name entered in column A
+  var j = 0
+  for (var i = 4; i < columnAValues.length; i++){
+    if (ss.getRange('A' + i).getValue() && name === ss.getRange('A' + i).getValue()){
+      return i
+    }
+    if (!ss.getRange('A' + i).getValue()){
+      j++
+    }
+    if (j === 3){
+      return ''
+    }
+  }
+}
+
+function enterDeadline(deadline, rowNum){
+  var ui = SpreadsheetApp.getUi()
+  
+  var response = ui.prompt(
+    deadline,
+    "Please enter the " + deadline + " Deadline:",
+    ui.ButtonSet.OK_CANCEL);
+  
+  var button = response.getSelectedButton()
+  var date = response.getResponseText()
+  
+  // Attempt to convert to a date with the input
+  if (!isNaN(new Date(date))){
+    return date
+  }
+  
+  // If button clicked is "OK", continue
+  if (button == ui.Button.OK){
+  
+    // keep asking for date until valid date is entered
+    while (true){
+      response = ui.prompt(
+        deadline,
+        'Please enter a valid ' + deadline + ' Deadline (e.g. "' + new Date() + '"):',
+        ui.ButtonSet.OK_CANCEL)
+        
+      // Get button clicked and response
+      button = response.getSelectedButton()
+      date = response.getResponseText()
+        
+      // If button clicked isn't "OK", return error
+      if (button != ui.Button.OK){
+        return 'error'
+      }
+      
+      // Attempt to convert to a date with the input
+      if (!isNaN(new Date(date))){
+        return date
+      }
+    }   
+  }
+  
+  // If button clicked isn't "OK", return error
+  else {
+    return 'error'
+  }
+}
+
 function updateCalendar(dueDiligenceDate, financingDate, settlementDate, rowNum){
   var ss = SpreadsheetApp.getActive()
   var buyerName = ss.getRange('A' + rowNum).getValue()
@@ -234,7 +398,7 @@ function updateCalendar(dueDiligenceDate, financingDate, settlementDate, rowNum)
   email = 'homie.com_1cs8eji9ahpmol4rvqllcq8bco@group.calendar.google.com'
   deleteCreateEvents(email, rowNum, dueDiligenceOldDate, financingOldDate, settlementOldDate, dueDiligenceDate, financingDate, settlementDate)
   
-  redoInputFormats()
+//  redoInputFormats()
   return alertUser('Success! Events have been added to your calendar.')
 }
 
@@ -498,170 +662,8 @@ function deleteEvents(){
   ss.getRange('AC' + rowNum + ':AE' + rowNum + '').clear({contentsOnly: true})
   
   // Reset the formatting for the date inputs 
-  redoInputFormats()
+//  redoInputFormats()
   
   // Success alert
   alertUser('Events were successfully deleted from your calendar.')
-}
-
-function addBuyer(){
-  var ss = SpreadsheetApp.getActive();
-  ss.insertRowsBefore(4,1)
-  
-  ss.getRange('L4').setValue('Open')
-  ss.getRange('O4').setFormula('=IF(B4="","",VLOOKUP(B4,Setting!A:B,2,false))')
-  ss.getRange('Q4').setFormula('=IF(J4="","",IFS(J4="TBD","TBD",MONTH(J4)=1,"January",MONTH(J4)=2,"February",MONTH(J4)=3,"March",MONTH(J4)=4,"April",MONTH(J4)=5,"May",MONTH(J4)=6,"June",MONTH(J4)=7,"July",MONTH(J4)=8,"August",MONTH(J4)=9,"September",MONTH(J4)=10,"October",MONTH(J4)=11,"November",MONTH(J4)=12,"December"))');
-  ss.getRange('R4').setFormula('=IF(J4="","",IF(J4="TBD","TBD",year(J4)))');
-  ss.getRange('S4').setFormula('=IFS(N4="TBD","TBD",N4="","",N4>0,O4&" "&N4)');
-  ss.getRange('AA4').setNumberFormat('m"/"d" "h":"mma/p')
-  ss.getRange('AA4').setValue('=NOW()')
-  var date = ss.getRange('AA4').getValue()
-  ss.getRange('AA4').setValue(date)
-  
-  ss.getSheetByName('Opportunities').getRange('V2')
-  .setDataValidation(
-    SpreadsheetApp.newDataValidation().setAllowInvalid(true).requireValueInRange(ss.getRange('Opportunities!$A$4:$A'), true).build()
-  )
-}
-
-function updateLastChange(rowEdited){
-  var ss = SpreadsheetApp.getActive()
-  ss.getRange('AF' + rowEdited).setValue("=NOW()").setNumberFormat('m"/"d"/"yy')
-  var date = ss.getRange('AF' + rowEdited).getValue()
-  ss.getRange('AF' + rowEdited).setValue(date)
-  
-  // Hide last columns
-  ss.getActiveSheet().hideColumn(ss.getRange('AC:AF'));
-}
-
-function onOpen() {
-  SpreadsheetApp.getUi()
-  .createMenu('UC Menu')
-  .addItem('Convert to UC', 'convertUC')
-  .addToUi();
-  
-  SpreadsheetApp.getUi()
-  .createMenu('Enter Deadline')
-  .addItem('Enter Deadline', 'enterDeadline')
-  .addToUi();
-}
-
-function convertUC() {
-  var ui = SpreadsheetApp.getUi(); 
-  var ss = SpreadsheetApp.getActive()
-  
-  var range = ss.getRange("A:A")
-  var columnAValues = range.getValues()
-
-  var result = ui.prompt(
-      'Buyer Name',
-      "Please enter the Buyer's name:",
-      ui.ButtonSet.OK_CANCEL);
-
-  // Process the user's response.
-  var button = result.getSelectedButton();
-  var name = result.getResponseText();
-  
-  // If user clicked "OK"
-  if (button == ui.Button.OK) {
-    
-    var rowNum = findBuyerName(name, columnAValues)
-    
-    // if rowNum is not an empty string
-    if (rowNum){
-      
-      // If cancelled or closed, quit macro
-      var dueDiligenceDate = enterDeadline('Due Diligence', rowNum)
-      if (dueDiligenceDate === 'error'){
-        return 
-      } 
-      
-      // If cancelled or closed, quit macro
-      var financingDate = enterDeadline('Financing & Appraisal', rowNum)
-      if (financingDate === 'error'){
-        return 
-      }
-      
-      // If cancelled or closed, quit macro
-      var settlementDate = enterDeadline('Settlement', rowNum)
-      if (settlementDate === 'error'){
-        return 
-      }
-      
-      ui.alert('dueDiligenceDate: ' + dueDiligenceDate + ', financingDate: ' + financingDate + ', settlementDate: ' + settlementDate)
-      return updateCalendar(dueDiligenceDate, financingDate, settlementDate, rowNum)
-    }
-    
-    // if rowNum is an empty string
-    else {
-      ui.alert('"' + name + '" not found in Opportunities. Please check the spelling and try again.')
-    }
-  } 
-}
-
-function findBuyerName(name, columnAValues){
-  var ss = SpreadsheetApp.getActive()
-  var ui = SpreadsheetApp.getUi()
-  
-  // Look for buyer name entered in column A
-  var j = 0
-  for (var i = 4; i < columnAValues.length; i++){
-    if (ss.getRange('A' + i).getValue() && name === ss.getRange('A' + i).getValue()){
-      return i
-    }
-    if (!ss.getRange('A' + i).getValue()){
-      j++
-    }
-    if (j === 3){
-      return ''
-    }
-  }
-}
-
-function enterDeadline(deadline, rowNum){
-  var ui = SpreadsheetApp.getUi()
-  
-  var response = ui.prompt(
-    deadline,
-    "Please enter the " + deadline + " Deadline:",
-    ui.ButtonSet.OK_CANCEL);
-  
-  var button = response.getSelectedButton()
-  var date = response.getResponseText()
-  
-  // Attempt to convert to a date with the input
-  if (!isNaN(new Date(date))){
-    return date
-  }
-  
-  // If button clicked is "OK", continue
-  if (button == ui.Button.OK){
-  
-    // keep asking for date until valid date is entered
-    while (true){
-      response = ui.prompt(
-        deadline,
-        'Please enter a valid ' + deadline + ' Deadline (e.g. "' + new Date() + '"):',
-        ui.ButtonSet.OK_CANCEL)
-        
-      // Get button clicked and response
-      button = response.getSelectedButton()
-      date = response.getResponseText()
-        
-      // If button clicked isn't "OK", return error
-      if (button != ui.Button.OK){
-        return 'error'
-      }
-      
-      // Attempt to convert to a date with the input
-      if (!isNaN(new Date(date))){
-        return date
-      }
-    }   
-  }
-  
-  // If button clicked isn't "OK", return error
-  else {
-    return 'error'
-  }
 }
