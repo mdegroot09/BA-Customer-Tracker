@@ -254,7 +254,7 @@ function convertUC() {
   var columnAValues = range.getValues()
 
   var result = ui.prompt(
-      'Buyer Name',
+      'Convert to Under Contract',
       "Please enter the Buyer's name:",
       ui.ButtonSet.OK_CANCEL);
 
@@ -580,18 +580,39 @@ function checkClosedDate(rowEdited){
   }
 }
 
-function deleteEvents(){
+function cancelContract(){
   var ss = SpreadsheetApp.getActive()
-  var buyerName = ss.getRange('V2').getValue()
+  var ui = SpreadsheetApp.getUi()
   
-  // If no buyer is selected, throw an error
-  if (!buyerName){
-    makeBuyerRed()
-    return alertUser('Enter a buyer name.')
+  var range = ss.getRange("A:A")
+  var columnAValues = range.getValues()
+  
+  var result = ui.prompt(
+    'Cancel Contract',
+    "Please enter the Buyer's name:",
+    ui.ButtonSet.OK_CANCEL);
+
+  // Process the user's response.
+  var button = result.getSelectedButton();
+  var buyerName = result.getResponseText();
+  
+  // If user clicked "OK"
+  if (button == ui.Button.OK) {
+    
+    var rowNum = findBuyerName(buyerName, columnAValues)
+    
+    // if rowNum is an empty string
+    if (!rowNum){
+      return ui.alert('"' + buyerName + '" not found in Opportunities. Please check the spelling and try again.')
+    }
+  }
+  
+  // If user cancelled or closed the box
+  else {
+    return
   }
   
   // Get row number of buyer being changed
-  var rowNum = ss.getRange('AA1').setFormula('=IFERROR(MATCH(V2,A:A,0),"")').getValue()
   ss.getRange('W' + rowNum + ':Y' + rowNum + '').setNumberFormat('m"/"d"/"yy')
   
   // Capture old dates
