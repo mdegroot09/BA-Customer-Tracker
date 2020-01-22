@@ -208,6 +208,9 @@ function addBuyer(){
   var ss = SpreadsheetApp.getActive();
   ss.insertRowsBefore(4,1)
   
+  var agentName = ss.getSheetByName('Dashboard').getRange('A6').getValue()
+  
+  ss.getRange('K4').setValue(agentName)
   ss.getRange('L4').setValue('Open')
   ss.getRange('O4').setFormula('=IF(B4="","",VLOOKUP(B4,Setting!A:B,2,false))')
   ss.getRange('Q4').setFormula('=IF(J4="","",IFS(J4="TBD","TBD",MONTH(J4)=1,"January",MONTH(J4)=2,"February",MONTH(J4)=3,"March",MONTH(J4)=4,"April",MONTH(J4)=5,"May",MONTH(J4)=6,"June",MONTH(J4)=7,"July",MONTH(J4)=8,"August",MONTH(J4)=9,"September",MONTH(J4)=10,"October",MONTH(J4)=11,"November",MONTH(J4)=12,"December"))');
@@ -407,20 +410,40 @@ function updateCalendar(dueDiligenceDate, financingDate, settlementDate, rowNum)
   ss.getRange('G' + rowNum).setValue('UC')
   
   // Ask for permission to send CCs an email
-  var response = ui.alert('Success! Deadlines have been added to your calendar. \r\n \r\n' +
-    'Do you want to email the closing coordinators saying ' + buyerName + ' is under contract? \r\n \r\n', ui.ButtonSet.YES_NO);
+  var emailResponse = ui.alert('Success! Deadlines have been added to your calendar. \r\n \r\n' +
+    'Do you want to email the closing coordinators saying ' + buyerName + ' is under contract? \r\n \r\n', ui.ButtonSet.YES_NO)
+  
+  var promptText = 'Do you want to update Jamison\'s "Broker Review Spreadsheet"? \r\n \r\n'
+  var spreadsheetResponse
   
   // Check for a YES click then send email
-  if (response == ui.Button.YES) {
+  if (emailResponse == ui.Button.YES) {
     sendEmail('UC', rowNum)
     
-    return alertUser('Success! Email has been sent.')
+    spreadsheetResponse = ui.alert('Success! \r\n' + 
+      'Email has been sent. \r\n \r\n' +
+      promptText, ui.ButtonSet.YES_NO)
   } 
   
   // If NO is selected
   else {
-    return alertUser("No email sent. \r\n \r\n" + 
-      'Make sure you let closings@homie.com know that ' + buyerName + ' is under contract.')
+    spreadsheetResponse = ui.alert("No email sent. \r\n" + 
+      'Make sure you let closings@homie.com know that ' + buyerName + ' is under contract. \r\n \r\n' +
+      promptText, ui.ButtonSet.YES_NO)
+  }
+  
+  // Check for a YES click on the spreadsheet prompt, then update
+  if (spreadsheetResponse == ui.Button.YES){
+    updateBrokerReview(rowNum)
+    
+    return alertUser("Success! \r\n" + 
+      'Jamison\'s Broker Review Spreadsheet has been updated. \r\n \r\n')
+  }
+  
+  // If NO is selected on the spreadsheet prompt, then do nothing
+  else {
+    return alertUser("Broker Review Spreadsheet not updated. \r\n" + 
+      'Make sure you add this new deal on your own. \r\n \r\n')
   }
 }
 
@@ -706,4 +729,34 @@ function cancelContract(){
     return alertUser("No email sent. \r\n \r\n" + 
       'Make sure you let closings@homie.com know that ' + buyerName + ' has cancelled the contract.')
   }
+}
+
+function updateBrokerReview(rowNum){
+  var ss = SpreadsheetApp.getActive()
+  
+  var buyerName = ss.getRange('A' + rowNum).getValue()
+  var dynamicsLink = ss.getRange('B' + rowNum).getValue()
+  var toolsLink = ss.getRange('C' + rowNum).getValue()
+  var buyerPhone = ss.getRange('D' + rowNum).getValue()
+  var buyerEmail = ss.getRange('E' + rowNum).getValue()
+  var buyerAgent = ss.getRange('K' + rowNum).getValue()
+  var address = ss.getRange('T' + rowNum).getValue()
+  var listedPrice = ss.getRange('U' + rowNum).getValue()
+  var underContractDate = ss.getRange('V' + rowNum).getValue()
+  var dueDiligenceDate = ss.getRange('W' + rowNum).getValue()
+  var financingDate = ss.getRange('X' + rowNum).getValue()
+  var settlementDate = ss.getRange('Y' + rowNum).getValue()
+  var closedDate = ss.getRange('Z' + rowNum).getValue()
+  var dateLeadReceived = ss.getRange('AA' + rowNum).getValue()
+  var notes = ss.getRange('AB' + rowNum).getValue()
+  
+  var brokerReviewSS = SpreadsheetApp.openById('1zHuWDfCGc1rh4XDTM8d5YRwUmurEtHXQXguJDAD5e3Y').getSheetByName('Black Ops')
+  
+  brokerReviewSS.insertRowsBefore(brokerReviewSS.getRange('2:2').getRow(), 1)
+  // 653 S 850 W, Layton
+  
+  brokerReviewSS.getRange('A1').setValue('=NOW()')
+  brokerReviewSS.getRange('A1').setNumberFormat('m"/"d"/"yy')
+  var date = brokerReviewSS.getRange('A1').getValue()
+  brokerReviewSS.getRange('A1').setValue(date)
 }
