@@ -202,11 +202,11 @@ function archive(rowEdited){
   ss.deleteRows(rowEdited, 1)
 }
 
-
-
 function addBuyer(){
   var ss = SpreadsheetApp.getActive();
-  ss.insertRowsBefore(4,1)
+  var rowNum = 4
+  
+  ss.insertRowsBefore(rowNum,1)
   
   var agentName = ss.getSheetByName('Dashboard').getRange('A6').getValue()
   
@@ -221,9 +221,12 @@ function addBuyer(){
   var date = ss.getRange('AA4').getValue()
   ss.getRange('AA4').setValue(date)
   
+  // Update last change cell
+  updateLastChange(rowNum)
+  
   ss.getSheetByName('Opportunities').getRange('V2')
   .setDataValidation(
-    SpreadsheetApp.newDataValidation().setAllowInvalid(true).requireValueInRange(ss.getRange('Opportunities!$A$4:$A'), true).build()
+    SpreadsheetApp.newDataValidation().setAllowInvalid(true).requireValueInRange(ss.getRange('Opportunities!$A$' + rowNum + ':$A'), true).build()
   )
 }
 
@@ -231,7 +234,7 @@ function updateLastChange(rowEdited){
   var ss = SpreadsheetApp.getActive()
   ss.getRange('AF' + rowEdited).setValue("=NOW()").setNumberFormat('m"/"d"/"yy')
   var date = ss.getRange('AF' + rowEdited).getValue()
-  ss.getRange('AF' + rowEdited).setValue(date)
+  ss.getRange('AF' + rowEdited).setValue(date).setNumberFormat('m"/"d"/"yy')
   
   // Hide last columns
   ss.getActiveSheet().hideColumn(ss.getRange('AC:AF'));
@@ -296,6 +299,9 @@ function convertUC() {
       if (settlementDate === 'error'){
         return 
       }
+      
+      // Upate last change column
+      updateLastChange(rowNum)
       
       return updateCalendar(dueDiligenceDate, financingDate, settlementDate, rowNum)
     }
@@ -712,6 +718,9 @@ function cancelContract(){
   
   // Change stage to Cancelled
   ss.getRange('G' + rowNum).setValue('Cancelled')
+  
+  // Update last change cell
+  updateLastChange(rowNum)
   
   // Ask for permission to send CCs an email
   var response = ui.alert('Success. Deadlines have been deleted from your calendar. \r\n \r\n' +
