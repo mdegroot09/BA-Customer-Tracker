@@ -210,6 +210,7 @@ function addBuyer(){
   
   var agentName = ss.getSheetByName('Dashboard').getRange('A6').getValue()
   
+  ss.getRange('J4').setValue('=Y' + rowNum)
   ss.getRange('K4').setValue(agentName)
   ss.getRange('L4').setValue('Open')
   ss.getRange('O4').setFormula('=IF(B4="","",VLOOKUP(B4,Setting!A:B,2,false))')
